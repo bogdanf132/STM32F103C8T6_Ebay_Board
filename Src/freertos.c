@@ -26,7 +26,9 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */     
-
+#include "adc.h"
+#include "stm32f1xx_hal_adc.h"
+#include "usbd_cdc_if.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -67,6 +69,22 @@ void NVM_Task(void const * argument);
 
 extern void MX_USB_DEVICE_Init(void);
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
+
+/* GetIdleTaskMemory prototype (linked to static allocation support) */
+void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer, StackType_t **ppxIdleTaskStackBuffer, uint32_t *pulIdleTaskStackSize );
+
+/* USER CODE BEGIN GET_IDLE_TASK_MEMORY */
+static StaticTask_t xIdleTaskTCBBuffer;
+static StackType_t xIdleStack[configMINIMAL_STACK_SIZE];
+  
+void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer, StackType_t **ppxIdleTaskStackBuffer, uint32_t *pulIdleTaskStackSize )
+{
+  *ppxIdleTaskTCBBuffer = &xIdleTaskTCBBuffer;
+  *ppxIdleTaskStackBuffer = &xIdleStack[0];
+  *pulIdleTaskStackSize = configMINIMAL_STACK_SIZE;
+  /* place for user code */
+}                   
+/* USER CODE END GET_IDLE_TASK_MEMORY */
 
 /**
   * @brief  FreeRTOS initialization
@@ -132,7 +150,6 @@ void StartDefaultTask(void const * argument)
 {
   /* init code for USB_DEVICE */
   MX_USB_DEVICE_Init();
-
   /* USER CODE BEGIN StartDefaultTask */
   /* Infinite loop */
   for(;;)
@@ -170,15 +187,45 @@ void Idle_Task(void const * argument)
 void COM_Task(void const * argument)
 {
   /* USER CODE BEGIN COM_Task */
+
+	static uint32_t adcVal = 0u;
+	static uint8_t dataReceived[4] = {0};
+	static volatile uint32_t period = 1000u;
+
   /* Infinite loop */
   for(;;)
   {
+
+		(void)HAL_ADC_Start(&hadc1);
+		uint32_t temp = 0u;
+		uint8_t adcValString[5] = {0};
+
+		if (!HAL_ADC_PollForConversion(&hadc1, 10u))
+		{
+			adcVal = HAL_ADC_GetValue(&hadc1);
+		}
+
+		adcValString[0] = 48u + (adcVal / 1000u);  // thousands
+		temp = adcVal % 1000u;
+		adcValString[1] = 48u + (temp / 100u);  // hundreds
+		temp = temp % 100u;
+		adcValString[2] = 48u + (temp / 10u);  // tens
+		temp = temp % 10u;
+		adcValString[3] = 48u + temp; // units
+		adcValString[4] = '*';
+
+	  volatile uint8_t status = CDC_Transmit_FS(adcValString, 5);
+
+//	  if(!status)
+//	  {
+
 	  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
 	  HAL_Delay(10);
 	  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
 	  HAL_Delay(1000);
 	  //HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_0);
 	  //HAL_Delay(500);
+//	  }
     osDelay(1);
   }
   /* USER CODE END COM_Task */

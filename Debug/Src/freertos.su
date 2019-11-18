@@ -1,6 +1,0 @@
-freertos.c:131:6:StartDefaultTask	8	static
-freertos.c:212:6:NVM_Task	8	static
-freertos.c:170:6:COM_Task	8	static
-freertos.c:194:6:IO_Task	8	static
-freertos.c:152:6:Idle_Task	8	static
-freertos.c:76:6:MX_FREERTOS_Init	120	static
