@@ -29,6 +29,7 @@
 #include "adc.h"
 #include "stm32f1xx_hal_adc.h"
 #include "usbd_cdc_if.h"
+//#include "stm32f1xx_II_usb.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -51,10 +52,7 @@
 
 /* USER CODE END Variables */
 osThreadId defaultTaskHandle;
-osThreadId OS_Idle_TaskHandle;
 osThreadId OS_COM_TaskHandle;
-osThreadId OS_IO_TaskHandle;
-osThreadId OS_NVM_TaskHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -62,10 +60,7 @@ osThreadId OS_NVM_TaskHandle;
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void const * argument);
-void Idle_Task(void const * argument);
 void COM_Task(void const * argument);
-void IO_Task(void const * argument);
-void NVM_Task(void const * argument);
 
 extern void MX_USB_DEVICE_Init(void);
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
@@ -117,21 +112,9 @@ void MX_FREERTOS_Init(void) {
   osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
-  /* definition and creation of OS_Idle_Task */
-  osThreadDef(OS_Idle_Task, Idle_Task, osPriorityIdle, 0, 128);
-  OS_Idle_TaskHandle = osThreadCreate(osThread(OS_Idle_Task), NULL);
-
   /* definition and creation of OS_COM_Task */
   osThreadDef(OS_COM_Task, COM_Task, osPriorityNormal, 0, 512);
   OS_COM_TaskHandle = osThreadCreate(osThread(OS_COM_Task), NULL);
-
-  /* definition and creation of OS_IO_Task */
-  osThreadDef(OS_IO_Task, IO_Task, osPriorityNormal, 0, 128);
-  OS_IO_TaskHandle = osThreadCreate(osThread(OS_IO_Task), NULL);
-
-  /* definition and creation of OS_NVM_Task */
-  osThreadDef(OS_NVM_Task, NVM_Task, osPriorityIdle, 0, 128);
-  OS_NVM_TaskHandle = osThreadCreate(osThread(OS_NVM_Task), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -157,24 +140,6 @@ void StartDefaultTask(void const * argument)
     osDelay(1);
   }
   /* USER CODE END StartDefaultTask */
-}
-
-/* USER CODE BEGIN Header_Idle_Task */
-/**
-* @brief Function implementing the OS_Idle_Task thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_Idle_Task */
-void Idle_Task(void const * argument)
-{
-  /* USER CODE BEGIN Idle_Task */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END Idle_Task */
 }
 
 /* USER CODE BEGIN Header_COM_Task */
@@ -218,53 +183,17 @@ void COM_Task(void const * argument)
 
 //	  if(!status)
 //	  {
-
-	  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
-	  HAL_Delay(10);
-	  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
-	  HAL_Delay(1000);
-	  //HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_0);
-	  //HAL_Delay(500);
+//
+//	  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
+//	  HAL_Delay(10);
+//	  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
+//	  HAL_Delay(1000);
+//	  //HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_0);
+//	  //HAL_Delay(500);
 //	  }
-    osDelay(1);
+    osDelay(10);
   }
   /* USER CODE END COM_Task */
-}
-
-/* USER CODE BEGIN Header_IO_Task */
-/**
-* @brief Function implementing the OS_IO_Task thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_IO_Task */
-void IO_Task(void const * argument)
-{
-  /* USER CODE BEGIN IO_Task */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END IO_Task */
-}
-
-/* USER CODE BEGIN Header_NVM_Task */
-/**
-* @brief Function implementing the OS_NVM_Task thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_NVM_Task */
-void NVM_Task(void const * argument)
-{
-  /* USER CODE BEGIN NVM_Task */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END NVM_Task */
 }
 
 /* Private application code --------------------------------------------------*/
